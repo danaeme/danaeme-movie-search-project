@@ -7,6 +7,10 @@ const jwt = require('jsonwebtoken');
 
 const SALT_LENGTH = 12;
 
+// router.get('/test', (req, res) => {
+//     res.send('Test route is working!');
+// });
+
 router.post('/signup', async (req, res) => {
     try {
         // Check if the username is already taken
@@ -17,6 +21,9 @@ router.post('/signup', async (req, res) => {
         // Create a new user with hashed password
         const user = await User.create({
             username: req.body.username,
+            email: req.body.email,
+            bio: req.body.bio || '',
+            profilePic: req.body.profilePic || '',
             hashedPassword: bcrypt.hashSync(req.body.password, SALT_LENGTH)
         })
         const token = jwt.sign({ username: user.username, _id: user._id }, process.env.JWT_SECRET);
