@@ -7,6 +7,8 @@ const mongoose = require('mongoose');
 const testJWTRouter = require('./controllers/test-jwt');
 const usersRouter = require('./controllers/users');
 const profilesRouter = require('./controllers/profiles');
+const moviesRouter = require('./controllers/movies');
+const commentsRouter = require('./controllers/comments');
 
 mongoose.connect(process.env.MONGODB_URI);
 
@@ -16,7 +18,6 @@ mongoose.connection.on('connected', () => {
 app.use(cors());
 app.use(express.json());
 
-const moviesRouter = require('./controllers/movies');
 
 
 // Routes go here
@@ -24,6 +25,7 @@ app.use('/test-jwt', testJWTRouter);
 app.use('/users', usersRouter);
 app.use('/profiles', profilesRouter);
 app.use('/movies', moviesRouter);
+app.use('/movies', commentsRouter);
 
 
 app.listen(3000, () => {
