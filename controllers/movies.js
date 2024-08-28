@@ -6,27 +6,32 @@ const verifyToken = require('../middleware/verify-token');
 
 router.post('/', verifyToken, async (req, res) => {
     try {
-      req.body.createdBy = req.user._id;
-      const movie = await Movie.create(req.body);
-      movie._doc.createdBy = req.user;
-  
-      res.status(201).json(movie);
+        req.body.createdBy = req.user._id;
+        const movie = await Movie.create(req.body);
+
+        // Update the movies array
+        const user = await User.findById(req.user._id);
+        user.movies.push(movie._id);
+        await user.save();
+
+        res.status(201).json(movie);
     } catch (error) {
-      console.log("Error creating movie:", error);
-      res.status(500).json({ error: error.message });
+        console.log("Error creating movie:", error);
+        res.status(500).json({ error: error.message });
     }
 });
 
-router.get('/', async (req, res) => {
-    try {
-      const movies = await Movie.find({})
-        .populate('createdBy')
-        .sort({ createdAt: 'desc' }); // sort movies by date
+
+router.get('/', verifyToken, async (req, res) => {
+  try {
+      const movies = await Movie.find({ createdBy: req.user._id })
+          .populate('createdBy')
+          .sort({ createdAt: 'desc' });
       res.status(200).json(movies);
-    } catch (error) {
+  } catch (error) {
       console.error("Error fetching movies:", error);
       res.status(500).json({ error: error.message });
-    }
+  }
 });
 
 
