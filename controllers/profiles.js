@@ -5,21 +5,20 @@ const verifyToken = require('../middleware/verify-token');
 
 router.get('/:userId', verifyToken, async (req, res) => {
     try {
-        if (req.user._id !== req.params.userId){
-            return res.status(401).json({ error: "Unauthorized" })
+        if (req.user._id !== req.params.userId) {
+            return res.status(401).json({ error: "Unauthorized access." });
         }
-        const user = await User.findById(req.user._id).populate('movies'); // populate the array of movies
+        const user = await User.findById(req.user._id).populate({
+            path: 'movies',
+            populate: { path: 'comments' } // Populate comments within movies
+        });
         if (!user) {
-            res.status(404);
-            throw new Error('Profile not found.');
+            return res.status(404).json({ error: 'Profile not found.' });
         }
-        res.json({ user });
+        res.status(200).json({ user });
     } catch (error) {
-        if (res.statusCode === 404) {
-            res.status(404).json({ error: error.message });
-        } else {
-            res.status(500).json({ error: error.message });
-        }
+        console.error("Error fetching profile:", error);
+        res.status(500).json({ error: 'Failed to fetch profile.' });
     }
 });
 

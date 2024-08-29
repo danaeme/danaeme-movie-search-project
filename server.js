@@ -27,6 +27,9 @@ app.use('/profiles', profilesRouter);
 app.use('/movies', moviesRouter);
 app.use('/movies', commentsRouter);
 
+app.use((req, res) => {
+    res.status(404).json({ error: 'Route not found.' });
+});
 
 app.listen(3000, () => {
     console.log('The express app is ready!');

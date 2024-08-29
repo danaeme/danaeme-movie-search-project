@@ -4,43 +4,53 @@ const Movie = require('../models/movie');
 const User = require('../models/user');
 const verifyToken = require('../middleware/verify-token');
 
+router.use(verifyToken);
+
 router.post('/', verifyToken, async (req, res) => {
-    try {
-        req.body.createdBy = req.user._id;
-        const movie = await Movie.create(req.body);
+  try {
+      req.body.createdBy = req.user._id;
+      const movie = await Movie.create(req.body);
 
-        // Update the movies array
-        const user = await User.findById(req.user._id);
-        user.movies.push(movie._id);
-        await user.save();
+      // Update the movies array in the User model
+      const user = await User.findById(req.user._id);
+      if (!user) {
+          return res.status(404).json({ error: 'User not found.' });
+      }
+      user.movies.push(movie._id);
+      await user.save();
 
-        res.status(201).json(movie);
-    } catch (error) {
-        console.log("Error creating movie:", error);
-        res.status(500).json({ error: error.message });
-    }
+      res.status(201).json(movie);
+  } catch (error) {
+      console.error("Error creating movie:", error); // Log detailed error
+      res.status(500).json({ error: 'Failed to create movie.' });
+  }
 });
-
 
 router.get('/', verifyToken, async (req, res) => {
   try {
       const movies = await Movie.find({ createdBy: req.user._id })
           .populate('createdBy')
           .sort({ createdAt: 'desc' });
+      if (!movies) {
+          return res.status(404).json({ error: 'Movies not found.' });
+      }
       res.status(200).json(movies);
   } catch (error) {
       console.error("Error fetching movies:", error);
-      res.status(500).json({ error: error.message });
+      res.status(500).json({ error: 'Failed to fetch movies.' });
   }
 });
-
 
 
 // GET /movies/:movieId
 router.get('/:movieId', async (req, res) => {
     try {
-      const foundMovie = await Movie.findById(req.params.movieId).populate('createdBy');
-
+      const foundMovie = await Movie.findById(req.params.movieId)
+      .populate('createdBy')  // populate user who created the movie
+      .populate({
+          path: 'comments',
+          populate: { path: 'user' }  // populate user who made the comment
+      });
       if (!foundMovie) {
         res.status(404);
         throw new Error('Movie not found.');
