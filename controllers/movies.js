@@ -11,7 +11,6 @@ router.post('/', verifyToken, async (req, res) => {
       req.body.createdBy = req.user._id;
       const movie = await Movie.create(req.body);
 
-      // Update the movies array in the User model
       const user = await User.findById(req.user._id);
       if (!user) {
           return res.status(404).json({ error: 'User not found.' });
@@ -21,8 +20,7 @@ router.post('/', verifyToken, async (req, res) => {
 
       res.status(201).json(movie);
   } catch (error) {
-      console.error("Error creating movie:", error); // Log detailed error
-      res.status(500).json({ error: 'Failed to create movie.' });
+      res.status(500).json(error);
   }
 });
 
@@ -36,33 +34,42 @@ router.get('/', verifyToken, async (req, res) => {
       }
       res.status(200).json(movies);
   } catch (error) {
-      console.error("Error fetching movies:", error);
-      res.status(500).json({ error: 'Failed to fetch movies.' });
+      res.status(500).json(error);
   }
 });
 
 
 // GET /movies/:movieId
 router.get('/:movieId', async (req, res) => {
-    try {
-      const foundMovie = await Movie.findById(req.params.movieId)
-      .populate('createdBy')  // populate user who created the movie
+  try {
+    const foundMovie = await Movie.findById(req.params.movieId)
+      .populate('createdBy')
       .populate({
-          path: 'comments',
-          populate: { path: 'user' }  // populate user who made the comment
+        path: 'comments',
+        populate: { path: 'user' }  
       });
-      if (!foundMovie) {
-        res.status(404);
-        throw new Error('Movie not found.');
-      }
+    if (!foundMovie) {
+      res.status(404).json({ error: 'Movie not found.' });
+    } else {
       res.status(200).json(foundMovie);
-    } catch (error) {
-      if (res.statusCode === 404) {
-        res.json({ error: error.message });
-      } else {
-        res.status(500).json({ error: error.message });
-      }
     }
+  } catch (error) {
+    res.status(500).json(error);
+  }
+});
+
+router.get('/users/:userId/movies', verifyToken, async (req, res) => {
+  try {
+      const movies = await Movie.find({ createdBy: req.params.userId })
+          .populate('createdBy')
+          .sort({ createdAt: 'desc' });
+      if (!movies.length) {
+          return res.status(404).json({ error: 'No movies found for this user.' });
+      }
+      res.status(200).json(movies);
+  } catch (error) {
+      res.status(500).json(error);
+  }
 });
 
 // DELETE /movies/:movieId
@@ -70,7 +77,6 @@ router.delete('/:movieId', verifyToken, async (req, res) => {
     try {
       const movieToDelete = await Movie.findById(req.params.movieId);
   
-      // Check if movie exists and logged in user is the creator
       if (!movieToDelete) {
         res.status(404);
         throw new Error('Movie not found.');
@@ -81,52 +87,37 @@ router.delete('/:movieId', verifyToken, async (req, res) => {
         throw new Error('You can only delete your own movies!');
       }
   
-      // deleteOne to remove the movie
       await Movie.deleteOne({ _id: req.params.movieId });
   
-      // Remove movie reference from user's movies 
       const user = await User.findById(req.user._id);
       user.movies = user.movies.filter(m => m.toString() !== req.params.movieId);
       await user.save();
   
-      res.status(200).json({ message: 'Movie deleted successfully.' });
+      res.status(200).json({ message: 'Movie deleted.' });
     } catch (error) {
-      if (res.statusCode === 404 || res.statusCode === 401) {
-        res.json({ error: error.message });
-      } else {
-        res.status(500).json({ error: error.message });
-      }
+      res.status(500).json(error);
     }
 });
 
 // UPDATE /movies/:movieId
 router.put('/:movieId', verifyToken, async (req, res) => {
     try {
-      // Find movie ID and update it with the request body
-      const updatedMovie = await Movie.findByIdAndUpdate(req.params.movieId, req.body, {
-        new: true, // Return the updated movie 
-      });
+      const updatedMovie = await Movie.findByIdAndUpdate(req.params.movieId, req.body, { new: true, });
   
       if (!updatedMovie) {
         res.status(404);
         throw new Error('Movie not found.');
       }
   
-      // If user is not the creator return a 401 error
       if (updatedMovie.createdBy.toString() !== req.user._id) {
         res.status(401);
-        throw new Error('You can only update your own movies.');
+        throw new Error('Only update your own movies!');
       }
   
-      // Return updated movie
+     
       res.status(200).json(updatedMovie);
     } catch (error) {
-      // errors
-      if (res.statusCode === 404 || res.statusCode === 401) {
-        res.json({ error: error.message });
-      } else {
-        res.status(500).json({ error: error.message });
-      }
+      res.status(500).json(error);
     }
 });
   

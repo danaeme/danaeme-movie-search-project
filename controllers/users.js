@@ -9,10 +9,6 @@ const verifyToken = require('../middleware/verify-token');
 
 const SALT_LENGTH = 12;
 
-// router.get('/test', (req, res) => {
-//     res.send('Test route is working!');
-// });
-
 router.post('/signup', async (req, res) => {
     try {
         const userInDatabase = await User.findOne({ username: req.body.username });
@@ -67,10 +63,9 @@ router.get('/search', verifyToken, async (req, res) => {
 router.get('/:userId', verifyToken, async (req, res) => {
     try {
         const user = await User.findById(req.params.userId)
-            .populate('movies') 
             .populate({
                 path: 'movies',
-                populate: { path: 'comments' } // Populate comments
+                populate: { path: 'comments', populate: { path: 'user' } } 
             });
         if (!user) {
             return res.status(404).json({ error: 'User not found.' });
