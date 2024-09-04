@@ -13,7 +13,7 @@ router.post('/', verifyToken, async (req, res) => {
 
       const user = await User.findById(req.user._id);
       if (!user) {
-          return res.status(404).json({ error: 'User not found.' });
+          return res.status(404).json(error);
       }
       user.movies.push(movie._id);
       await user.save();
@@ -30,7 +30,7 @@ router.get('/', verifyToken, async (req, res) => {
           .populate('createdBy')
           .sort({ createdAt: 'desc' });
       if (!movies) {
-          return res.status(404).json({ error: 'Movies not found.' });
+          return res.status(404).json(error);
       }
       res.status(200).json(movies);
   } catch (error) {
@@ -48,7 +48,7 @@ router.get('/:movieId', async (req, res) => {
         populate: { path: 'user' }  
       });
     if (!foundMovie) {
-      res.status(404).json({ error: 'Movie not found.' });
+      res.status(404).json(error);
     } else {
       res.status(200).json(foundMovie);
     }
@@ -63,7 +63,7 @@ router.get('/users/:userId/movies', verifyToken, async (req, res) => {
           .populate('createdBy')
           .sort({ createdAt: 'desc' });
       if (!movies.length) {
-          return res.status(404).json({ error: 'No movies found for this user.' });
+          return res.status(404).json(error);
       }
       res.status(200).json(movies);
   } catch (error) {
@@ -91,7 +91,7 @@ router.delete('/:movieId', verifyToken, async (req, res) => {
       user.movies = user.movies.filter(m => m.toString() !== req.params.movieId);
       await user.save();
   
-      res.status(200).json({ message: 'Movie deleted.' });
+      res.status(200).json(error);
     } catch (error) {
       res.status(500).json(error);
     }

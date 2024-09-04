@@ -27,6 +27,11 @@ app.use('/profiles', profilesRouter);
 app.use('/movies', moviesRouter);
 app.use('/movies', commentsRouter);
 
+app.get('/', (req, res) => {
+    res.json({ message: 'Reading' });
+});
+
+
 app.use((req, res) => {
     res.status(404).json({ error: 'Route not found.' });
 });
@@ -34,3 +39,4 @@ app.use((req, res) => {
 app.listen(3000, () => {
     console.log('The express app is ready!');
 });
+
