@@ -21,7 +21,6 @@ app.use(express.json());
 
 
 
-// Routes go here
 app.use('/test-jwt', testJWTRouter);
 app.use('/users', usersRouter);
 app.use('/profiles', profilesRouter);
