@@ -27,9 +27,9 @@ app.use('/profiles', profilesRouter);
 app.use('/movies', moviesRouter);
 app.use('/movies', commentsRouter);
 
-app.get('/', (req, res) => {
-    res.json({ message: 'Reading' });
-});
+// app.get('/', (req, res) => {
+//     res.json({ message: 'Reading' });
+// });
 
 
 app.use((req, res) => {
