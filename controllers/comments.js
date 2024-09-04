@@ -4,7 +4,6 @@ const Comment = require('../models/comment');
 const Movie = require('../models/movie');
 const verifyToken = require('../middleware/verify-token');
 
-// Add a new comment to a movie
 router.post('/:movieId/comments', verifyToken, async (req, res) => {
     try {
         req.body.user = req.user._id;
@@ -25,7 +24,6 @@ router.post('/:movieId/comments', verifyToken, async (req, res) => {
 });
 
 
-// Get a specific comment
 router.get('/:movieId/comments/:commentId', async (req, res) => {
     try {
         const comment = await Comment.findById(req.params.commentId)
@@ -40,7 +38,6 @@ router.get('/:movieId/comments/:commentId', async (req, res) => {
     }
 });
 
-// Update a comment
 router.put('/:movieId/comments/:commentId', verifyToken, async (req, res) => {
     try {
         const comment = await Comment.findById(req.params.commentId);
@@ -60,7 +57,6 @@ router.put('/:movieId/comments/:commentId', verifyToken, async (req, res) => {
     }
 });
 
-// Delete a comment
 router.delete('/:movieId/comments/:commentId', verifyToken, async (req, res) => {
     try {
         const movie = await Movie.findById(req.params.movieId);

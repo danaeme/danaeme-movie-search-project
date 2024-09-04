@@ -43,7 +43,6 @@ router.post('/signin', async (req, res) => {
     }
 });
 
-// route to search for users
 router.get('/search', verifyToken, async (req, res) => {
     const { query } = req.query;
     try {
@@ -59,7 +58,6 @@ router.get('/search', verifyToken, async (req, res) => {
     }
 });
 
-// GET user profile with entries
 router.get('/:userId', verifyToken, async (req, res) => {
     try {
         const user = await User.findById(req.params.userId)
@@ -71,6 +69,45 @@ router.get('/:userId', verifyToken, async (req, res) => {
             return res.status(404).json({ error: 'User not found.' });
         }
         res.status(200).json(user);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+router.put('/:userId', verifyToken, async (req, res) => {
+    try {
+        const user = await User.findById(req.params.userId);
+
+        if (!user) {
+            return res.status(404).json({ error: 'User not found.' });
+        }
+
+        user.username = req.body.username || user.username;
+        user.email = req.body.email || user.email;
+        user.bio = req.body.bio || user.bio;
+
+        if (req.body.password) {
+            user.hashedPassword = bcrypt.hashSync(req.body.password, SALT_LENGTH);
+        }
+
+        await user.save();
+        res.status(200).json(user);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+router.delete('/:userId', verifyToken, async (req, res) => {
+    try {
+        const user = await User.findByIdAndDelete(req.params.userId);
+
+        if (!user) {
+            return res.status(404).json({ error: 'User not found.' });
+        }
+
+        await Movie.deleteMany({ createdBy: user._id });
+
+        res.status(200).json({ message: 'User deleted.' });
     } catch (error) {
         res.status(500).json({ error: error.message });
     }

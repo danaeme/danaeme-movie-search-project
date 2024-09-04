@@ -39,7 +39,6 @@ router.get('/', verifyToken, async (req, res) => {
 });
 
 
-// GET /movies/:movieId
 router.get('/:movieId', async (req, res) => {
   try {
     const foundMovie = await Movie.findById(req.params.movieId)
@@ -72,7 +71,6 @@ router.get('/users/:userId/movies', verifyToken, async (req, res) => {
   }
 });
 
-// DELETE /movies/:movieId
 router.delete('/:movieId', verifyToken, async (req, res) => {
     try {
       const movieToDelete = await Movie.findById(req.params.movieId);
@@ -99,7 +97,6 @@ router.delete('/:movieId', verifyToken, async (req, res) => {
     }
 });
 
-// UPDATE /movies/:movieId
 router.put('/:movieId', verifyToken, async (req, res) => {
     try {
       const updatedMovie = await Movie.findByIdAndUpdate(req.params.movieId, req.body, { new: true, });
