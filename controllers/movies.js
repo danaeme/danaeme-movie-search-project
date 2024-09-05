@@ -91,7 +91,7 @@ router.delete('/:movieId', verifyToken, async (req, res) => {
       user.movies = user.movies.filter(m => m.toString() !== req.params.movieId);
       await user.save();
   
-      res.status(200).json(error);
+      res.status(200).json({ message: 'Movie deleted successfully' });
     } catch (error) {
       res.status(500).json(error);
     }
